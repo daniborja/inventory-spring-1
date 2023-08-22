@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14.6
+    container_name: spring1_postgresql_db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: mySecretPassword123
+      POSTGRES_DB: inventory-management
+      POSTGRES_USER: postgres
+      PGDATA: /data/postgres
+    volumes:
+      - spring_postgresql:/data/postgres
+      # postgres    ->    /var/lib/postgresql/data
+      # mongo       ->    /data/db
+      # mysql       ->    /var/lib/mysql
+      # mariadb     ->    /var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d spring_security']
+      interval: 5s #10
+      timeout: 3s #5
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    # image: dpage/pgadmin4:7.4
+    container_name: spring1_postgresql_db_pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy # Wait for the health check
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '8090:80'
+    volumes:
+      - spring_pgadmin:/var/lib/pgadmin
+
+    # Connection: localhost:8090  <--  localhost because they are on the same network
+    # host: postgres
+    # user: postgres
+
+volumes:
+  spring_postgresql:
+    external: true
+  spring_pgadmin:
+    external: true
+
+# create the required volumes:   `docker volume create spring_pgadmin`
