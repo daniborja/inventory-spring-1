@@ -1,4 +1,4 @@
-package com.alex.inventorymanagement.users.service;
+package com.alex.inventorymanagement.auth.service;
 
 import com.alex.inventorymanagement.auth.entity.Role;
 

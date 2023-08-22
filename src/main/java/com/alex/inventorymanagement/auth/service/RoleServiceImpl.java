@@ -1,4 +1,4 @@
-package com.alex.inventorymanagement.users.service;
+package com.alex.inventorymanagement.auth.service;
 
 import com.alex.inventorymanagement.auth.entity.Role;
 import com.alex.inventorymanagement.auth.repository.RoleRepository;
@@ -20,4 +20,5 @@ public class RoleServiceImpl implements RoleService {
                 () -> new ResourceNotFoundException("Role", "name", name)
         );
     }
+
 }
