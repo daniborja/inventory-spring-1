@@ -1,10 +1,17 @@
 package com.alex.inventorymanagement.auth.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponseDto {
 
     private String token;
@@ -12,11 +19,12 @@ public class AuthResponseDto {
 
     @Data
     public static class UserDto {
-        private String name;
-        private String lastName;
+        private long id;
+        private String firstname;
+        private String lastname;
+        private String fullName;
         private String email;
         private List<RoleDto> roles;
-        private long id;
     }
 
     @Data
