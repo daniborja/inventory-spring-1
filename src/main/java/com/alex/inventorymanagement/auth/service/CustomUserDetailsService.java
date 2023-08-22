@@ -1,12 +1,12 @@
 package com.alex.inventorymanagement.auth.service;
 
 import com.alex.inventorymanagement.auth.jwt.UserDetailsImpl;
-import com.alex.inventorymanagement.common.exceptions.UserNotFoundException;
 import com.alex.inventorymanagement.users.entity.Usuario;
 import com.alex.inventorymanagement.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UserNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario user = userService.findOneByEmail(email);
 
         return new UserDetailsImpl(user);
