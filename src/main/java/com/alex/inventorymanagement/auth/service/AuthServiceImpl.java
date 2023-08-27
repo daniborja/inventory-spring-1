@@ -42,6 +42,12 @@ public class AuthServiceImpl implements AuthService {
         return generateAuthResponse(user);
     }
 
+    @Override
+    public AuthResponseDto renewJwt(String userEmail) {
+        Usuario user = userService.findOneByEmail(userEmail);
+
+        return generateAuthResponse(user);
+    }
 
     private Usuario createUserFromDto(RegisterRequestDto registerDto) {
         Usuario newUser = modelMapper.map(registerDto, Usuario.class);

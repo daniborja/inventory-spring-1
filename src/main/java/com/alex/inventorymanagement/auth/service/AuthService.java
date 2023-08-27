@@ -11,4 +11,6 @@ public interface AuthService {
 
     AuthResponseDto login(LoginRequestDto loginDto);
 
+    AuthResponseDto renewJwt(String userEmail);
+
 }
