@@ -1,10 +1,10 @@
 package com.alex.inventorymanagement.auth.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.alex.inventorymanagement.common.exceptions.BadRequestException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -47,7 +47,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())  // payload q se va a codificar (email, uuid, usrname)
                 .setIssuedAt(new Date(System.currentTimeMillis()))    // when this jwt was created - to calculate the expiration date
-                .setExpiration(new Date(System.currentTimeMillis() + (1000L * 60 * JWT_EXPIRATION_HOURS)))    // setear el tiempo de validez del jwt
+                .setExpiration(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * JWT_EXPIRATION_HOURS)))    // setear el tiempo de validez del jwt
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)   // hashcode redomendado
                 .compact();
     }
@@ -68,12 +68,26 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String jwt) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey()) // JWT Secret
-                .build()    // xq es 1 builder
-                .parseClaimsJws(jwt)    // parse el JWT para extraer los claims
-                .getBody();     // cuando hace el parse puede obtener los claims y en este caso queremos el body
+        Claims claims;
+
+        try {
+            claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(getSigningKey()) // JWT Secret
+                    .build()    // xq es 1 builder
+                    .parseClaimsJws(jwt)    // parse el JWT para extraer los claims
+                    .getBody();     // cuando hace el parse puede obtener los claims y en este caso queremos el body
+        } catch (SecurityException ex) {    // invalid signature
+            throw new BadRequestException("Invalid Token Signature");
+        } catch (MalformedJwtException | UnsupportedJwtException ex) {
+            throw new BadRequestException( "Invalid Token");
+        } catch (ExpiredJwtException ex) {
+            throw new BadRequestException( "Expired Token");
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException( "Invalid Token Claims");
+        }
+
+        return claims;
     }
 
     private Key getSigningKey() {

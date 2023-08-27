@@ -3,12 +3,15 @@ package com.alex.inventorymanagement.auth.jwt;
 
 import com.alex.inventorymanagement.auth.service.CustomUserDetailsService;
 import com.alex.inventorymanagement.auth.service.JwtService;
+import com.alex.inventorymanagement.common.dto.ErrorDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,10 +21,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 
 @Component  // transform/register to a managed @Bean of Spring (Inject)
-@RequiredArgsConstructor  // construira constructor con cada property(FINAL) q le creemos a la clase y permitira la Inject en Auto
+@RequiredArgsConstructor
+@Slf4j
+// construira constructor con cada property(FINAL) q le creemos a la clase y permitira la Inject en Auto
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     // // La Inject se hace en auto x constructo con lombok para todos los FINAL gracias a @RequiredArgsConstructor
@@ -39,29 +45,42 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt = getJwtFromRequest(request);
 
         if (StringUtils.hasText(jwt)) {
-            String userEmail = jwtService.extractUsername(jwt);  // username 'cause jwt call like this (email, uuid, username)
+            try {
+                String userEmail = jwtService.extractUsername(jwt);  // username 'cause jwt call like this (email, uuid, username)
 
-            // // si ya esta auth NO debo actualizar el SecurityContextHolder ni demas cosas
-            // si !== null significa q YA esta Auth
-            if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+                // // si ya esta auth NO debo actualizar el SecurityContextHolder ni demas cosas
+                // si !== null significa q YA esta Auth
+                if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
 
-                // validate if the JWT is valid
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    // Este Obj es necesario x Spring para UPDATE el SecurityContextHolder
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+                    // validate if the JWT is valid
+                    if (jwtService.isTokenValid(jwt, userDetails)) {
+                        // Este Obj es necesario x Spring para UPDATE el SecurityContextHolder
+                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
 
-                    authenticationToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                        authenticationToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
 
-                    // // Update SecurityContextHolder
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                        // // Update SecurityContextHolder
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
                 }
+            } catch (Exception e) {
+                ErrorDetails errorDetails = ErrorDetails.builder()
+                        .timeStamp(new Date())
+                        .message(e.getMessage())
+                        .details(request.getRequestURI())
+                        .build();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write(new ObjectMapper().writeValueAsString(errorDetails));
+                log.warn(e.getMessage());
+                return;
             }
         }
 

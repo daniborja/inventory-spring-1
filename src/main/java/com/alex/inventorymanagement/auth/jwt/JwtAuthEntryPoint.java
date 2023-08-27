@@ -1,5 +1,6 @@
 package com.alex.inventorymanagement.auth.jwt;
 
+import com.alex.inventorymanagement.common.dto.ErrorDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +10,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
 
 
 @Component
@@ -22,15 +22,20 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException, ServletException {
-        sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+//        authException.printStackTrace();
+//        sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+        sendErrorResponse(response, request, HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("message", message);
+    private void sendErrorResponse(HttpServletResponse response, HttpServletRequest request, int status) throws IOException {
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .timeStamp(new Date())
+                .message("Resource not found")
+                .details(request.getRequestURI())
+                .build();
 
         response.setStatus(status);
         response.setContentType("application/json");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorDetails));
     }
 }
