@@ -1,17 +1,13 @@
 package com.alex.inventorymanagement.auth.jwt;
 
-
 import com.alex.inventorymanagement.auth.service.CustomUserDetailsService;
 import com.alex.inventorymanagement.auth.service.JwtService;
-import com.alex.inventorymanagement.common.dto.ErrorDetails;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,12 +17,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Date;
 
 
 @Component  // transform/register to a managed @Bean of Spring (Inject)
 @RequiredArgsConstructor
-@Slf4j
 // construira constructor con cada property(FINAL) q le creemos a la clase y permitira la Inject en Auto
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -34,6 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     // @Autowired in auto by constructor thanks to @RequiredArgsConstructor
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtService jwtService;
+    private final SecurityErrorResponse securityErrorResponse;
 
 
     @Override
@@ -71,15 +66,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
-                ErrorDetails errorDetails = ErrorDetails.builder()
-                        .timeStamp(new Date())
-                        .message(e.getMessage())
-                        .details(request.getRequestURI())
-                        .build();
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write(new ObjectMapper().writeValueAsString(errorDetails));
-                log.warn(e.getMessage());
+                securityErrorResponse.sendErrorResponse(
+                        request,
+                        response,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        e.getMessage()
+                );
                 return;
             }
         }

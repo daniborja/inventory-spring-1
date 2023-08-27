@@ -80,11 +80,11 @@ public class JwtService {
         } catch (SecurityException ex) {    // invalid signature
             throw new BadRequestException("Invalid Token Signature");
         } catch (MalformedJwtException | UnsupportedJwtException ex) {
-            throw new BadRequestException( "Invalid Token");
+            throw new BadRequestException("Invalid Token");
         } catch (ExpiredJwtException ex) {
-            throw new BadRequestException( "Expired Token");
+            throw new BadRequestException("Expired Token");
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException( "Invalid Token Claims");
+            throw new BadRequestException("Invalid Token Claims");
         }
 
         return claims;
