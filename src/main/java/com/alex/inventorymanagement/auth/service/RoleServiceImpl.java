@@ -16,7 +16,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role findOneByName(String name) {
-        return roleRepository.findOneByName(name).orElseThrow(
+        return roleRepository.findByName(name).orElseThrow(
                 () -> new ResourceNotFoundException("Role", "name", name)
         );
     }

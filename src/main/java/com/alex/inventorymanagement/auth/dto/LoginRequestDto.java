@@ -14,9 +14,10 @@ public class LoginRequestDto {
     private String email;
 
     @NotEmpty
+    @NotEmpty
     @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$",
-            message = "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, and one digit."
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!%*?&.]{8,}$",
+            message = "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
     )
     private String password;
 

@@ -1,6 +1,7 @@
 package com.alex.inventorymanagement.auth.service;
 
 import com.alex.inventorymanagement.common.exceptions.BadRequestException;
+import com.alex.inventorymanagement.common.exceptions.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -8,12 +9,15 @@ import io.jsonwebtoken.security.SecurityException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service    // transform to a managed @Bean of Spring (Inject)
@@ -66,6 +70,29 @@ public class JwtService {
                 username.equalsIgnoreCase(userDetails.getUsername()) && !isTokenExpired(jwt)
         );
     }
+
+
+    // // validate uri and bearer token
+    public String validateJwtRequest(String authHeader, String uri) {
+        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
+            return authHeader.replace("Bearer ", "");
+        }
+
+        // // we need to handle like this 'cause of the filterChain behavior (says that this endpoint exists but need auth, another just handling by EntryPoint)
+        // // Not is possible to set an 404, so this validation is not necessary, but to have 2 errors  <-- .anyRequest().authenticated()
+        // regex for any api version
+        String regex = "/api/v\\d+/auth/renew-token";
+
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(uri);
+
+        if (!StringUtils.hasText(authHeader) && matcher.find()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        return null;
+    }
+
 
     private Claims extractAllClaims(String jwt) {
         Claims claims;

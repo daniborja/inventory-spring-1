@@ -33,3 +33,7 @@ build/
 .vscode/
 notes*md
 
+### Compiled output ###
+/node_modules
+node_modules*
+.pnpm-store

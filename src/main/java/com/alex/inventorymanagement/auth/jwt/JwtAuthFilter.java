@@ -21,11 +21,9 @@ import java.io.IOException;
 
 @Component  // transform/register to a managed @Bean of Spring (Inject)
 @RequiredArgsConstructor
-// construira constructor con cada property(FINAL) q le creemos a la clase y permitira la Inject en Auto
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    // // La Inject se hace en auto x constructo con lombok para todos los FINAL gracias a @RequiredArgsConstructor
-    // @Autowired in auto by constructor thanks to @RequiredArgsConstructor
+    // construira constructor con cada property(FINAL) q le creemos a la clase y permitira la Inject en Auto
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtService jwtService;
     private final SecurityErrorResponse securityErrorResponse;
@@ -37,10 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,   // res como tal
             @NonNull FilterChain filterChain         // continuara con la ejecucion de los demas filtros de la filterChain
     ) throws ServletException, IOException {
-        final String jwt = getJwtFromRequest(request);
+        try {
+            final String jwt = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(jwt)) {
-            try {
+            if (StringUtils.hasText(jwt)) {
                 String userEmail = jwtService.extractUsername(jwt);  // username 'cause jwt call like this (email, uuid, username)
 
                 // // si ya esta auth NO debo actualizar el SecurityContextHolder ni demas cosas
@@ -50,7 +48,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                     // validate if the JWT is valid
                     if (jwtService.isTokenValid(jwt, userDetails)) {
-                        // Este Obj es necesario x Spring para UPDATE el SecurityContextHolder
+                        // this object is needed to UPDATE the SecurityContextHolder
                         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
@@ -65,15 +63,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     }
                 }
-            } catch (Exception e) {
-                securityErrorResponse.sendErrorResponse(
-                        request,
-                        response,
-                        HttpServletResponse.SC_UNAUTHORIZED,
-                        e.getMessage()
-                );
-                return;
             }
+        } catch (Exception e) {
+            // handling Filter exceptions that can't be caught by GlobalExceptionHandler
+            securityErrorResponse.sendErrorResponse(
+                    request,
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    e.getMessage()
+            );
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -81,12 +80,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
+        String currentUri = request.getRequestURI();
 
-        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            return authHeader.replace("Bearer ", "");
-        }
-
-        return null;
+        return jwtService.validateJwtRequest(authHeader, currentUri);
     }
 
 }

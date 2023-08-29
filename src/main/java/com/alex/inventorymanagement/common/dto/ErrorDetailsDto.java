@@ -12,10 +12,8 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ErrorDetails {
-
+public class ErrorDetailsDto {
     private Date timeStamp;
     private String message;
     private String details;
-
 }

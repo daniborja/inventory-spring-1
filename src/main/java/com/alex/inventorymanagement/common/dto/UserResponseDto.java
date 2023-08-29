@@ -1,4 +1,4 @@
-package com.alex.inventorymanagement.users.dto;
+package com.alex.inventorymanagement.common.dto;
 
 import com.alex.inventorymanagement.auth.entity.Role;
 import lombok.AllArgsConstructor;

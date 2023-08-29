@@ -13,15 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @Configuration      // register as @Bean Config
-@RequiredArgsConstructor     // Inject all final properties by constructor
+@RequiredArgsConstructor
 public class JwtAppConfig {
 
-    // // Inject in auto by @RequiredArgsConstructor (final attributes - constructor)
     private final CustomUserDetailsService customUserDetailsService;
-    // private final UserRepository userRepository;
 
 
-    @Bean   // la 1ra implementacion q Spring va a encontrar para INJECT in  WebSecurityConfig
+    @Bean   // la 1ra implementacion q Spring va a encontrar para INJECT in  WebSecurityConfig >> AuthenticationProvider
     public AuthenticationProvider authenticationProvider() {
         // es el encargado de hacer Fetch del userDetails, Encode Password, etc.
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();

@@ -1,9 +1,10 @@
 package com.alex.inventorymanagement.auth.jwt;
 
-import com.alex.inventorymanagement.common.dto.ErrorDetails;
+import com.alex.inventorymanagement.common.dto.ErrorDetailsDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -12,17 +13,16 @@ import java.util.Date;
 
 
 @Component
+@RequiredArgsConstructor
 public class SecurityErrorResponse {
 
-    private final ObjectMapper objectMapper;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
-    public SecurityErrorResponse(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    private final ObjectMapper objectMapper;
+
 
     public void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, int status, String message) throws IOException {
-        ErrorDetails errorDetails = ErrorDetails.builder()
+        ErrorDetailsDto errorDetails = ErrorDetailsDto.builder()
                 .timeStamp(new Date())
                 .message(message)
                 .details(request.getRequestURI())

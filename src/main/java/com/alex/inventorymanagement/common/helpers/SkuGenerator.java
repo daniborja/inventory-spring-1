@@ -22,4 +22,5 @@ public class SkuGenerator {
 
         return skuBuilder.append(randomNumberStr).append(randomChar).toString();
     }
+
 }

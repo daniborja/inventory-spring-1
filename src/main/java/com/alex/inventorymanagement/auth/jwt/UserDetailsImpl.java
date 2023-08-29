@@ -2,6 +2,7 @@ package com.alex.inventorymanagement.auth.jwt;
 
 import com.alex.inventorymanagement.auth.entity.Role;
 import com.alex.inventorymanagement.users.entity.Usuario;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,7 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-@RequiredArgsConstructor     // Inject all final properties by constructor
+@Getter
+@RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
     private final Usuario user;
@@ -51,13 +53,16 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // soft delete validation
+        return !user.isDeleted();
     }
 
 
     // map all user roles
     private Collection<? extends GrantedAuthority> mapRoles(Set<Role> roles) {
-        return roles.stream().map(rol -> new SimpleGrantedAuthority(rol.getName())).collect(Collectors.toList());
+        return roles.stream().map(rol -> new SimpleGrantedAuthority(rol.getName())).collect(Collectors.toSet());
     }
 
 }
+
+
