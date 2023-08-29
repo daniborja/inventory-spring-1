@@ -24,9 +24,13 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)     // autoincrement
     private Long id;
 
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false, unique = true)
     private String sku;
-    private Boolean hasStock;
+
+    private String description;
     private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -40,13 +44,17 @@ public class Product {
     @JsonBackReference("category_ref")
     private Category category;          // SIII crea aqui la FK
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonManagedReference("product_measurement_ref")
-    private List<ProductMeasurement> productMeasurements;   // NOO crea FK aqui
+    private List<ProductMeasurement> productMeasurements;   // NOO crea FK aqui  |  1 product != sizes, etc
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonManagedReference("product_stock_ref")
-    private List<Stock> stocks;         // NOO crea la FK
+    private List<Stock> stocks;         // NOO crea la FK  |  create != stocks by product&measurement
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @JsonManagedReference("product_img_ref")
+    private List<ProductImage> images;
 
 
     @PrePersist
