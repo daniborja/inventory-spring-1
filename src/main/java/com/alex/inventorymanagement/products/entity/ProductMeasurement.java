@@ -1,9 +1,13 @@
 package com.alex.inventorymanagement.products.entity;
 
+import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Where;
+
+import java.util.Set;
 
 
 @Data
@@ -31,5 +35,9 @@ public class ProductMeasurement {
     @JoinColumn(name = "product_id")
     @JsonBackReference("product_measurement_ref")
     private Product product;            // SII crea la FK aqui
+
+    @OneToMany(mappedBy = "productMeasurement")
+    @JsonIgnore
+    private Set<Stock> stocks;
 
 }
