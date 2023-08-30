@@ -1,16 +1,18 @@
 package com.alex.inventorymanagement.products.entity;
 
-import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
-
-import java.util.Set;
 
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "product_measurement")
 @Where(clause = "product.deleted = false")
@@ -22,10 +24,10 @@ public class ProductMeasurement {
     private Long id;
 
     @Column(name = "measurement_type")
-    private Double measurementType;
+    private String measurementType;
 
     @Column(name = "measurement_value")
-    private Double measurementValue;
+    private String measurementValue;
 
     @Column(columnDefinition = "boolean default false")
     private boolean deleted = false;
@@ -36,8 +38,8 @@ public class ProductMeasurement {
     @JsonBackReference("product_measurement_ref")
     private Product product;            // SII crea la FK aqui
 
-    @OneToMany(mappedBy = "productMeasurement")
-    @JsonIgnore
-    private Set<Stock> stocks;
+//    @OneToMany(mappedBy = "productMeasurement")
+//    @JsonIgnore
+//    private Set<Stock> stocks;
 
 }

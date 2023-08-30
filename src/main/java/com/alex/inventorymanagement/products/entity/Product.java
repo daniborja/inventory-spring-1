@@ -6,7 +6,10 @@ import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
 import org.springframework.util.StringUtils;
 
@@ -16,6 +19,9 @@ import java.util.List;
 
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "product")
 @Where(clause = "deleted = false") // filtra los deleted para todos los Select
@@ -50,7 +56,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonManagedReference("product_stock_ref")
-    private List<Stock> stocks;         // NOO crea la FK  |  create != stocks by product&measurement
+    private List<Stock> stocks;         // NOO crea la FK  |  we can have != stocks by product_measurement
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonManagedReference("product_img_ref")
