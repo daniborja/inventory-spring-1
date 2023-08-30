@@ -1,5 +1,6 @@
 package com.alex.inventorymanagement.products.controller;
 
+import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
 import com.alex.inventorymanagement.products.dto.ProductRequestDto;
 import com.alex.inventorymanagement.products.service.ProductService;
 import jakarta.validation.Valid;
@@ -21,7 +22,7 @@ public class ProductController {
 
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody ProductRequestDto productRequestDto) {
+    public ResponseEntity<CreateProductResponseDto> create(@Valid @RequestBody ProductRequestDto productRequestDto) {
 
         return new ResponseEntity<>(productService.create(productRequestDto), HttpStatus.CREATED);
 

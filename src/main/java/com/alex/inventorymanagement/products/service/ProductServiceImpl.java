@@ -3,24 +3,23 @@ package com.alex.inventorymanagement.products.service;
 import com.alex.inventorymanagement.categories.entity.Category;
 import com.alex.inventorymanagement.categories.repository.CategoryRepository;
 import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
-import com.alex.inventorymanagement.products.dto.ProductRequestDto;
 import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
+import com.alex.inventorymanagement.products.dto.ProductRequestDto;
 import com.alex.inventorymanagement.products.entity.Product;
 import com.alex.inventorymanagement.products.entity.ProductImage;
 import com.alex.inventorymanagement.products.entity.ProductMeasurement;
 import com.alex.inventorymanagement.products.repository.ProductImageRepository;
 import com.alex.inventorymanagement.products.repository.ProductMeasurementRepository;
 import com.alex.inventorymanagement.products.repository.ProductRepository;
+import com.alex.inventorymanagement.products.utils.ProductCreator;
 import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.alex.inventorymanagement.stocks.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -32,75 +31,44 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMeasurementRepository productMeasurementRepository;
     private final ProductImageRepository productImageRepository;
     private final StockRepository stockRepository;
-    private final ModelMapper modelMapper;
+    private final ProductCreator productCreator;
 
 
     @Override
-    @Transactional
+    @Transactional  // genera la "sesión de persistencia" y administra las relaciones para W asi (sin productID hasta el final)
+                    // Hibernate hace Updates al final para garantizar las relaciones <- @Transactional
     public CreateProductResponseDto create(ProductRequestDto productDto) {
         Category category = categoryRepository.findById(productDto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "ID", productDto.getCategoryId()));
 
-        Product product = createProductFromDto(productDto, category);
-        ProductMeasurement productMeasurement = createProductMeasurementFromDto(productDto, product);
-        List<ProductImage> productImages = createProductImagesFromDto(productDto, product);
+        // // Si NO depende de otros calculos, PERSISTIR antes q nada para tener el ID y q Hibernate NOO haga 1 UPDATE x c/relacion en la @Transactional
+        // NO hace falta la reasigacion para q product adquiera el ID, tras el .save() las demas entities pueden acceder al id
+        Product product = productCreator.createProduct(productDto, category);
+        productRepository.save(product);
 
-        product.setImages((List<ProductImage>) productImageRepository.saveAll(productImages));
-        Stock stock = createStock(product, productDto.getQuantity(), productMeasurement);
 
-        product = productRepository.save(product);
-        stock = stockRepository.save(stock);
+        ProductMeasurement productMeasurement = productCreator.createProductMeasurement(productDto, product);
+        List<ProductImage> productImages = productCreator.createProductImages(productDto, product);
 
-        return mapToCreateProductResponseDto(product, productMeasurement, stock);
+
+        // // Hibernate administra las relacones entre entidades en Memoria ANTES de la persistencia en DB. X ello, cuando se Persiste el Product, Hiberate
+        // actualiza las refs en memoria para setear el ProductID real de las asociaciones y ya culminar con la Persistencia en BD (@Transactional)
+        // esto genera 1 UPDATE en DB x cada Entidad relacionada, x eso Persistir cuanto antes el MainTable para tener su ID y evitar tantos
+        // UPDATES en DB, sobrecargando la DB innecesariamente.
+        productMeasurementRepository.save(productMeasurement);
+        productImageRepository.saveAll(productImages);
+
+        // ya tengo el ID, evito update innecesrio
+        Stock stock = productCreator.createStock(product, productDto.getQuantity(), productMeasurement);
+        stockRepository.save(stock);
+
+        // para el maping del DTO final
+        product.setImages(productImages);
+        product.setStocks(Collections.singletonList(stock));
+        product.setProductMeasurements(Collections.singletonList(productMeasurement));
+
+
+        return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock);
     }
 
-
-    private Product createProductFromDto(ProductRequestDto productDto, Category category) {
-        // avoid using modelmapper for cache problems >> UPDATE (todo: check if it is for singleton | Inject)
-        return Product.builder()
-                .title(productDto.getTitle())
-                .description(productDto.getDescription())
-                .category(category)
-                .price(productDto.getPrice())
-                .images(Collections.emptyList())
-                .productMeasurements(Collections.emptyList())
-                .deleted(false)
-                .build();
-    }
-
-    private ProductMeasurement createProductMeasurementFromDto(ProductRequestDto productDto, Product product) {
-        ProductMeasurement productMeasurement = ProductMeasurement.builder()
-                .product(product)
-                .measurementType(productDto.getMeasurementType())
-                .measurementValue(productDto.getMeasurementValue())
-                .build();
-
-        return productMeasurementRepository.save(productMeasurement);
-    }
-
-    private List<ProductImage> createProductImagesFromDto(ProductRequestDto productDto, Product product) {
-        return productDto.getImages().stream()
-                .map(imageUrl -> {
-                    ProductImage productImage = new ProductImage();
-                    productImage.setProduct(product);
-                    productImage.setImageUrl(imageUrl);
-                    return productImage;
-                })
-                .collect(Collectors.toList());
-    }
-
-    private Stock createStock(Product product, Long quantity, ProductMeasurement productMeasurement) {
-        Stock stock = new Stock();
-        stock.setProduct(product);
-        stock.setQuantity(quantity);
-        stock.setProductMeasurement(productMeasurement);
-        return stock;
-    }
-
-    private CreateProductResponseDto mapToCreateProductResponseDto(Product product, ProductMeasurement productMeasurement, Stock stock) {
-        CreateProductResponseDto productResponseDto = modelMapper.map(product, CreateProductResponseDto.class);
-        productResponseDto.setProductMeasurement(modelMapper.map(productMeasurement, CreateProductResponseDto.ProductMeasurementDTO.class));
-        productResponseDto.setStock(modelMapper.map(stock, CreateProductResponseDto.StockDTO.class));
-        return productResponseDto;
-    }
 }
