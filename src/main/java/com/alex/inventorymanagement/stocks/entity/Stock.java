@@ -12,8 +12,8 @@ import org.hibernate.annotations.Where;
 @Data
 @Entity
 @Table(name = "stock")
-@Where(clause = "product.deleted = false")
-//@Where(clause = "deleted = false")
+//@Where(clause = "product.deleted = false")
+@Where(clause = "deleted = false")
 public class Stock {
 
     @Id

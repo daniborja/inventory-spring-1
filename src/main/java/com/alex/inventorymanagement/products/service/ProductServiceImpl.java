@@ -4,6 +4,7 @@ import com.alex.inventorymanagement.categories.entity.Category;
 import com.alex.inventorymanagement.categories.repository.CategoryRepository;
 import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
 import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
+import com.alex.inventorymanagement.products.dto.PaginatedProductsResponseDto;
 import com.alex.inventorymanagement.products.dto.ProductRequestDto;
 import com.alex.inventorymanagement.products.entity.Product;
 import com.alex.inventorymanagement.products.entity.ProductImage;
@@ -15,6 +16,9 @@ import com.alex.inventorymanagement.products.utils.ProductCreator;
 import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.alex.inventorymanagement.stocks.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +37,13 @@ public class ProductServiceImpl implements ProductService {
     private final StockRepository stockRepository;
     private final ProductCreator productCreator;
 
+    private final ModelMapper modelMapper;
+
 
     @Override
-    @Transactional  // genera la "sesión de persistencia" y administra las relaciones para W asi (sin productID hasta el final)
-                    // Hibernate hace Updates al final para garantizar las relaciones <- @Transactional
+    @Transactional
+    // genera la "sesión de persistencia" y administra las relaciones para W asi (sin productID hasta el final)
+    // Hibernate hace Updates al final para garantizar las relaciones <- @Transactional
     public CreateProductResponseDto create(ProductRequestDto productDto) {
         Category category = categoryRepository.findById(productDto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "ID", productDto.getCategoryId()));
@@ -70,5 +77,27 @@ public class ProductServiceImpl implements ProductService {
 
         return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock);
     }
+
+    @Override
+    public PaginatedProductsResponseDto findAll(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);  // @override do not required in Repository <- JpaRepository
+        List<Product> products = productPage.getContent();
+        List<PaginatedProductsResponseDto.ProductDto> productDtoList = products
+                .stream()
+                .map(product -> modelMapper.map(product, PaginatedProductsResponseDto.ProductDto.class))
+                .toList(); // jdk 20
+//                .collect(Collectors.toList());
+
+
+        return PaginatedProductsResponseDto.builder()
+                .products(productDtoList)
+                .pageNumber(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .isLastOne(productPage.isLast())
+                .build();
+    }
+
 
 }

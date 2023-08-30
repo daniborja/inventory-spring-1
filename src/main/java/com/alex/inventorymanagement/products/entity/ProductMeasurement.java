@@ -15,8 +15,8 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @Entity
 @Table(name = "product_measurement")
-@Where(clause = "product.deleted = false")
-//@Where(clause = "deleted = false")
+//@Where(clause = "product.deleted = false")
+@Where(clause = "deleted = false")
 public class ProductMeasurement {
 
     @Id
