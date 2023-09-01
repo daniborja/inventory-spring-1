@@ -2,7 +2,6 @@ package com.alex.inventorymanagement.products.service;
 
 import com.alex.inventorymanagement.categories.entity.Category;
 import com.alex.inventorymanagement.categories.repository.CategoryRepository;
-import com.alex.inventorymanagement.common.exceptions.BadRequestException;
 import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
 import com.alex.inventorymanagement.products.dto.*;
 import com.alex.inventorymanagement.products.entity.Product;
@@ -12,6 +11,7 @@ import com.alex.inventorymanagement.products.repository.ProductImageRepository;
 import com.alex.inventorymanagement.products.repository.ProductMeasurementRepository;
 import com.alex.inventorymanagement.products.repository.ProductRepository;
 import com.alex.inventorymanagement.products.utils.ProductCreator;
+import com.alex.inventorymanagement.products.utils.ProductUpdater;
 import com.alex.inventorymanagement.stocks.entity.Stock;
 import com.alex.inventorymanagement.stocks.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @Service
@@ -36,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final StockRepository stockRepository;
     private final ProductCreator productCreator;
+    private final ProductUpdater productUpdater;
 
     private final ModelMapper modelMapper;
 
@@ -182,12 +181,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = getProductById(productId);
         Category category = getCategoryById(productDto.getCategoryId());
 
-        List<ProductMeasurement> updatedProductMeasurements = updateProductMeasurements(productId, productDto.getProductMeasurements(), product);
-        List<ProductImage> updatedProductImages = updateProductImages(productId, productDto.getImages(), product);
-        List<Stock> updatedStocks = updateStocks(productId, productDto.getStocks(), product);
+        List<ProductMeasurement> updatedProductMeasurements =
+                productUpdater.updateProductMeasurements(productId, productDto.getProductMeasurements(), product);
+        List<ProductImage> updatedProductImages =
+                productUpdater.updateProductImages(productId, productDto.getImages(), product);
+        List<Stock> updatedStocks =
+                productUpdater.updateStocks(productId, productDto.getStocks(), product);
 
-        updateProductFields(product, category, updatedProductMeasurements, updatedProductImages, updatedStocks, productDto);
+        productUpdater.updateProductFields(product, category, updatedProductMeasurements, updatedProductImages, updatedStocks, productDto);
 
+        // TODO: avoid deleting product id
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(savedProduct, ProductResponseDto.class);
@@ -214,80 +217,6 @@ public class ProductServiceImpl implements ProductService {
     private Category getCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "ID", categoryId));
-    }
-
-    private List<ProductMeasurement> updateProductMeasurements(Long productId, List<ProductUPDRequestDto.ProductMeasurementDto> measurementDtos, Product product ) {
-        List<ProductMeasurement> productMeasurementsDb = productMeasurementRepository.fetchAllByProductId(productId);
-        List<ProductMeasurement> updatedProductMeasurements = new ArrayList<>();
-
-        for (int i = 0; i < measurementDtos.size(); i++) {
-            ProductUPDRequestDto.ProductMeasurementDto measurementDto = measurementDtos.get(i);
-            ProductMeasurement dbMeasurement = productMeasurementsDb.get(i);
-
-            if (!Objects.equals(measurementDto.getId(), dbMeasurement.getId())) {
-                throw new ResourceNotFoundException("Product Measurement", "ID", measurementDto.getId());
-            }
-
-            ProductMeasurement productMeasurement = modelMapper.map(measurementDto, ProductMeasurement.class);
-            productMeasurement.setProduct(product);
-            updatedProductMeasurements.add(productMeasurement);
-        }
-
-        productMeasurementRepository.saveAll(updatedProductMeasurements);
-        return updatedProductMeasurements;
-    }
-
-    private List<ProductImage> updateProductImages(Long productId, List<ProductUPDRequestDto.ImageDto> imageDtos, Product product) {
-        List<ProductImage> productImagesDb = productImageRepository.findAllByProductIdOrderByIdAsc(productId);
-        List<ProductImage> updatedProductImages = new ArrayList<>();
-
-        for (int i = 0; i < imageDtos.size(); i++) {
-            ProductUPDRequestDto.ImageDto imageDto = imageDtos.get(i);
-            ProductImage dbImage = productImagesDb.get(i);
-
-            if (!Objects.equals(imageDto.getId(), dbImage.getId())) {
-                throw new ResourceNotFoundException("Product Image", "ID", imageDto.getId());
-            }
-
-            ProductImage productImage = modelMapper.map(imageDto, ProductImage.class);
-            productImage.setProduct(product);
-            updatedProductImages.add(productImage);
-        }
-
-        productImageRepository.saveAll(updatedProductImages);
-        return updatedProductImages;
-    }
-
-    private List<Stock> updateStocks(Long productId, List<ProductUPDRequestDto.StockDto> stockDtos, Product product) {
-        List<Stock> stocksDb = stockRepository.findAllByProductIdOrderByIdAsc(productId);
-        List<Stock> updatedStocks = new ArrayList<>();
-
-        for (int i = 0; i < stockDtos.size(); i++) {
-            ProductUPDRequestDto.StockDto stockDto = stockDtos.get(i);
-            Stock dbStock = stocksDb.get(i);
-
-            if (!Objects.equals(stockDto.getQuantityId(), dbStock.getId())) {
-                throw new ResourceNotFoundException("Stock", "ID", stockDto.getQuantityId());
-            }
-
-            Stock stock = modelMapper.map(stockDto, Stock.class);
-            stock.setProduct(product);
-            updatedStocks.add(stock);
-        }
-
-        stockRepository.saveAll(updatedStocks);
-        return updatedStocks;
-    }
-
-    private void updateProductFields(Product product, Category category, List<ProductMeasurement> measurements,
-                                     List<ProductImage> images, List<Stock> stocks, ProductUPDRequestDto productDto) {
-        product.setCategory(category);
-        product.setImages(images);
-        product.setProductMeasurements(measurements);
-        product.setStocks(stocks);
-        product.setTitle(productDto.getTitle());
-        product.setDescription(productDto.getDescription());
-        product.setPrice(productDto.getPrice());
     }
 
 }
