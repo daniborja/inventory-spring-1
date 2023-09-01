@@ -93,6 +93,7 @@ public class ProductUpdaterImpl implements ProductUpdater {
 
             Stock stock = modelMapper.map(stockDto, Stock.class);
             stock.setProduct(product);
+            stock.setProductMeasurement(dbStock.getProductMeasurement());
             updatedStocks.add(stock);
         }
 
@@ -100,9 +101,13 @@ public class ProductUpdaterImpl implements ProductUpdater {
         return updatedStocks;
     }
 
+
+    // do not use ModelMapper to avoid cache/fk/upd errors in complex entities like this
     @Override
-    public void updateProductFields(Product product, Category category, List<ProductMeasurement> measurements,
-                                    List<ProductImage> images, List<Stock> stocks, ProductUPDRequestDto productDto) {
+    public void updateProductFields(
+            Product product, Category category, List<ProductMeasurement> measurements,
+            List<ProductImage> images, List<Stock> stocks, ProductUPDRequestDto productDto
+    ) {
         product.setCategory(category);
         product.setImages(images);
         product.setProductMeasurements(measurements);
@@ -113,4 +118,3 @@ public class ProductUpdaterImpl implements ProductUpdater {
     }
 
 }
-

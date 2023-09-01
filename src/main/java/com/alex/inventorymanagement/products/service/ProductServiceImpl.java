@@ -39,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
     private final ModelMapper modelMapper;
 
 
+    /*
     @Override
     @Transactional
     // genera la "sesión de persistencia" y administra las relaciones para W asi (sin productID hasta el final)
@@ -72,6 +73,28 @@ public class ProductServiceImpl implements ProductService {
 
         // // todos el mapping en el DTO para evitar UPD en el product. Nooo agregar nada ni tocar el Product Instance para evitar UPD
         // con esto, en este punto YAAA evito los UPD innecesarios
+        return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock, productImages);
+    }
+    */
+
+    @Override
+    @Transactional
+    public CreateProductResponseDto create(ProductRequestDto productDto) {
+        Category category = getCategoryById(productDto.getCategoryId());
+
+        // Crear todas las asociaciones primero
+        Product product = productCreator.createProduct(productDto, category);
+        ProductMeasurement productMeasurement = productCreator.createProductMeasurement(productDto, product);
+        List<ProductImage> productImages = productCreator.createProductImages(productDto, product);
+        Stock stock = productCreator.createStock(product, productDto.getQuantity(), productMeasurement);
+
+        // Persistir el producto después de crear las asociaciones
+        productRepository.save(product);
+        productMeasurementRepository.save(productMeasurement);
+        productImageRepository.saveAll(productImages);
+        stockRepository.save(stock);
+
+        // Mapear a DTO
         return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock, productImages);
     }
 
@@ -150,6 +173,7 @@ public class ProductServiceImpl implements ProductService {
             if (Objects.equals(productDto.getStocks().get(i).getQuantityId(), stocksDb.get(i).getId())) {
                 Stock stock = modelMapper.map(productDto.getStocks().get(i), Stock.class);
                 stock.setProduct(product);
+                stock.setProductMeasurement(stocksDb.get(i).getProductMeasurement()); // OJO con el ID al hacer el UPD
                 updatedStocks.add(stock);
             } else {
                 throw new ResourceNotFoundException("Stock", "ID", productDto.getStocks().get(i).getQuantityId());
@@ -175,6 +199,7 @@ public class ProductServiceImpl implements ProductService {
     }
     */
 
+
     @Override
     @Transactional
     public ProductResponseDto update(Long productId, ProductUPDRequestDto productDto) {
@@ -188,9 +213,9 @@ public class ProductServiceImpl implements ProductService {
         List<Stock> updatedStocks =
                 productUpdater.updateStocks(productId, productDto.getStocks(), product);
 
+        // // do not use ModelMapper to avoid cache/fk/upd errors in complex entities like this (Associations) | err of change FK in DB
         productUpdater.updateProductFields(product, category, updatedProductMeasurements, updatedProductImages, updatedStocks, productDto);
 
-        // TODO: avoid deleting product id
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(savedProduct, ProductResponseDto.class);
@@ -210,7 +235,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     private Product getProductById(Long productId) {
-        return productRepository.findById(productId)
+        return productRepository.fetchOneById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
     }
 
