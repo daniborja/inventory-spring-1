@@ -15,4 +15,6 @@ public interface ProductService {
 
     ProductResponseDto findOne(Long id);
 
+    void delete(Long id);
+
 }

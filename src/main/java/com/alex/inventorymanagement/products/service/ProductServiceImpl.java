@@ -80,6 +80,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PaginatedProductsResponseDto findAll(Pageable pageable) {
         Page<Product> productPage = productRepository.fetchAll(pageable);  // @override do not required in Repository <- JpaRepository
         List<Product> products = productPage.getContent();
@@ -101,12 +102,31 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDto findOne(Long id) {
         Product product = productRepository.fetchOneById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Product", "ID", id)
         );
 
         return modelMapper.map(product, ProductResponseDto.class);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Product product = productRepository.fetchOneById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Product", "ID", id)
+        );
+        product.setDeleted(true);
+
+        List<ProductMeasurement> productMeasurements = product.getProductMeasurements().stream()
+                .peek(productMeasurement -> productMeasurement.setDeleted(true)).toList();
+        productMeasurementRepository.saveAll(productMeasurements);
+
+        List<Stock> stocks = product.getStocks().stream().peek(stock -> stock.setDeleted(true)).toList();
+        stockRepository.saveAll(stocks);
+
+        productRepository.save(product);
     }
 
 }
