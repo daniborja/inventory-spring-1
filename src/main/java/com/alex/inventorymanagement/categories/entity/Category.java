@@ -26,7 +26,7 @@ public class Category {
     private boolean deleted = false;
 
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @JsonManagedReference("category_ref")
     private List<Product> products;     // NOOO crea la FK aqui
 

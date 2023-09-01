@@ -4,6 +4,7 @@ import com.alex.inventorymanagement.common.constants.PaginationConstants;
 import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
 import com.alex.inventorymanagement.products.dto.PaginatedProductsResponseDto;
 import com.alex.inventorymanagement.products.dto.ProductRequestDto;
+import com.alex.inventorymanagement.products.repository.ProductRepository;
 import com.alex.inventorymanagement.products.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
-
+    private final ProductRepository productRepository;
 
     @PostMapping
     public ResponseEntity<CreateProductResponseDto> create(@Valid @RequestBody ProductRequestDto productRequestDto) {
@@ -42,6 +43,11 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return ResponseEntity.ok(productService.findAll(pageable));
+    }
+
+    @GetMapping("/procedure")
+    public ResponseEntity<?> findAllProcedure() {
+        return ResponseEntity.ok(productRepository.getProductsWithDetails());
     }
 
 }
