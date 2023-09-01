@@ -21,7 +21,11 @@ public interface ProductCreator {
 
     Stock createStock(Product product, Long quantity, ProductMeasurement productMeasurement);
 
-    CreateProductResponseDto mapToCreateProductResponseDto(Product product, ProductMeasurement productMeasurement, Stock stock);
+    CreateProductResponseDto mapToCreateProductResponseDto(
+            Product product,
+            ProductMeasurement productMeasurement,
+            Stock stock,
+            List<ProductImage> productImages);
 
 }
 

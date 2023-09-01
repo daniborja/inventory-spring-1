@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -52,7 +51,8 @@ public class ProductServiceImpl implements ProductService {
         // // Si NO depende de otros calculos, PERSISTIR antes q nada para tener el ID y q Hibernate NOO haga 1 UPDATE x c/relacion en la @Transactional
         // NO hace falta la reasigacion para q product adquiera el ID, tras el .save() las demas entities pueden acceder al id
         Product product = productCreator.createProduct(productDto, category);
-        productRepository.save(product);
+        productRepository.save(product);    // No UPD los asociados. NOO agregar nada mas al product xq sino va a hacer UPD.
+        // Las asociaciones dejarlas al Mapping del DTO y solo agregar al DTO, ya NO tocar l product xq genera el UPD
 
 
         ProductMeasurement productMeasurement = productCreator.createProductMeasurement(productDto, product);
@@ -70,13 +70,10 @@ public class ProductServiceImpl implements ProductService {
         Stock stock = productCreator.createStock(product, productDto.getQuantity(), productMeasurement);
         stockRepository.save(stock);
 
-        // para el maping del DTO final
-        product.setImages(productImages);
-        product.setStocks(Collections.singletonList(stock));
-        product.setProductMeasurements(Collections.singletonList(productMeasurement));
+        // productRepository.save(product);  // aqui NOOO se UPD el product, pero los asociados SI (no eficiente)
 
-
-        return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock);
+        // // todos el mapping en el DTO para evitar UPD en el product. Nooo agregar nada ni tocar el Product Instance para evitar UPD
+        return productCreator.mapToCreateProductResponseDto(product, productMeasurement, stock, productImages);
     }
 
     @Override
@@ -112,21 +109,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
-    public void delete(Long id) {
+    public ProductResponseDto update(Long id, ProductRequestDto productDto) {
         Product product = productRepository.fetchOneById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Product", "ID", id)
         );
-        product.setDeleted(true);
 
-        List<ProductMeasurement> productMeasurements = product.getProductMeasurements().stream()
-                .peek(productMeasurement -> productMeasurement.setDeleted(true)).toList();
-        productMeasurementRepository.saveAll(productMeasurements);
 
-        List<Stock> stocks = product.getStocks().stream().peek(stock -> stock.setDeleted(true)).toList();
-        stockRepository.saveAll(stocks);
+        return null;
+    }
 
-        productRepository.save(product);
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        int updatedRows = productRepository.markAsDeleted(id);
+        if (updatedRows == 0) throw new ResourceNotFoundException("Product", "ID", id);
+
+        // mark all records associated with this productId
+        productMeasurementRepository.markAsDeletedByProductId(id);
+        stockRepository.markAsDeletedByProductId(id);
+
     }
 
 }

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class ProductCreatorImpl implements ProductCreator {
                 .description(productDto.getDescription())
                 .category(category)
                 .price(productDto.getPrice())
-                .images(Collections.emptyList())
+                .images(new ArrayList<>())
                 .productMeasurements(Collections.emptyList())
                 .deleted(false)
                 .build();
@@ -67,12 +68,23 @@ public class ProductCreatorImpl implements ProductCreator {
         return stock;
     }
 
+
+    // // Importate q reciba todos lo q queremos Asociar (Relaciones) y setearlas al DTO, NOOO tocar el Product xq eso generaria 1 UDP en DB
     @Override
-    public CreateProductResponseDto mapToCreateProductResponseDto(Product product, ProductMeasurement productMeasurement, Stock stock) {
+    public CreateProductResponseDto mapToCreateProductResponseDto(
+            Product product,
+            ProductMeasurement productMeasurement,
+            Stock stock,
+            List<ProductImage> productImages
+    ) {
 
         CreateProductResponseDto productResponseDto = modelMapper.map(product, CreateProductResponseDto.class);
         productResponseDto.setProductMeasurement(modelMapper.map(productMeasurement, CreateProductResponseDto.ProductMeasurementDTO.class));
         productResponseDto.setStock(modelMapper.map(stock, CreateProductResponseDto.StockDTO.class));
+
+        List<CreateProductResponseDto.ImageDTO> imageDTOS = productImages.stream()
+                .map(productImage -> modelMapper.map(productImage, CreateProductResponseDto.ImageDTO.class)).toList();
+        productResponseDto.setImages(imageDTOS);
 
         return productResponseDto;
     }
