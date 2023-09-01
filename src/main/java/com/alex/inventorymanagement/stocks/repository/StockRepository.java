@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 
 public interface StockRepository extends CrudRepository<Stock, Long> {
 
@@ -12,5 +14,6 @@ public interface StockRepository extends CrudRepository<Stock, Long> {
     @Query("UPDATE Stock s SET s.deleted = true WHERE s.product.id = :productId")
     void markAsDeletedByProductId(Long productId);
 
+    List<Stock> findAllByProductIdOrderByIdAsc(Long productId);
 
 }

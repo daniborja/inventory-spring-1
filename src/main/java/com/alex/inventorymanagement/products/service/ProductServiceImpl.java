@@ -120,11 +120,11 @@ public class ProductServiceImpl implements ProductService {
                 () -> new ResourceNotFoundException("Category", "ID", productDto.getCategoryId())
         );
 
-        List<ProductMeasurement> productMeasurements = productMeasurementRepository.fetchAllByProductId(productId);
+        List<ProductMeasurement> productMeasurementsDb = productMeasurementRepository.fetchAllByProductId(productId);
         List<ProductMeasurement> updatedProductMeasurements = new ArrayList<>();
         // NO es Flexible xq requiere q el front envie tal cual se recupera de la DB (sort by ID desc)
         for (int i = 0; i < productDto.getProductMeasurements().size(); i++) {
-            if (Objects.equals(productDto.getProductMeasurements().get(i).getId(), productMeasurements.get(i).getId())) {
+            if (Objects.equals(productDto.getProductMeasurements().get(i).getId(), productMeasurementsDb.get(i).getId())) {
                 ProductMeasurement productMeasurement = modelMapper.map(productDto.getProductMeasurements().get(i), ProductMeasurement.class);
                 productMeasurement.setProduct(product);
                 updatedProductMeasurements.add(productMeasurement);
@@ -134,30 +134,44 @@ public class ProductServiceImpl implements ProductService {
         }
         productMeasurementRepository.saveAll(updatedProductMeasurements);
 
-        List<ProductImage> productImages = productImageRepository.findAllByProductIdOrderByIdAsc(productId);
+        List<ProductImage> productImagesDb = productImageRepository.findAllByProductIdOrderByIdAsc(productId);
         List<ProductImage> updatedProductImages = new ArrayList<>();
         for (int i = 0; i < productDto.getImages().size(); i++) {
-            if (Objects.equals(productDto.getImages().get(i).getId(), productImages.get(i).getId())) {
+            if (Objects.equals(productDto.getImages().get(i).getId(), productImagesDb.get(i).getId())) {
                 ProductImage productImage = modelMapper.map(productDto.getImages().get(i), ProductImage.class);
                 productImage.setProduct(product);
                 updatedProductImages.add(productImage);
             } else {
-                throw new ResourceNotFoundException("Product Image", "ID", productImages.get(i).getId());
+                throw new ResourceNotFoundException("Product Image", "ID", productImagesDb.get(i).getId());
             }
         }
         productImageRepository.saveAll(updatedProductImages);
+
+        List<Stock> stocksDb = stockRepository.findAllByProductIdOrderByIdAsc(productId);
+        List<Stock> updatedStocks = new ArrayList<>();
+        for (int i = 0; i < productDto.getStocks().size(); i++) {
+            if (Objects.equals(productDto.getStocks().get(i).getQuantityId(), stocksDb.get(i).getId())) {
+                Stock stock = modelMapper.map(productDto.getStocks().get(i), Stock.class);
+                stock.setProduct(product);
+                updatedStocks.add(stock);
+            } else {
+                throw new ResourceNotFoundException("Stock", "ID", productDto.getStocks().get(i).getQuantityId());
+            }
+        }
+        stockRepository.saveAll(updatedStocks);
 
 
         // // set category before mapping, otherwise it throw an error
         product.setCategory(category);
         product.setImages(updatedProductImages);
         product.setProductMeasurements(updatedProductMeasurements);
+        product.setStocks(updatedStocks);
         product.setCategory(category);
         product.setTitle(productDto.getTitle());
         product.setDescription(productDto.getDescription());
         product.setPrice(productDto.getPrice());
 
-//        modelMapper.map(productDto, product); // NOOO usar para DTO to ENTITY cuando son Complejas, tiene otros Objects dentro (Table Associations)
+        // modelMapper.map(productDto, product); // NOOO usar para DTO to ENTITY cuando son Complejas, tiene otros Objects dentro (Table Associations)
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(savedProduct, ProductResponseDto.class);
