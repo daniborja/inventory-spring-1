@@ -150,9 +150,14 @@ public class ProductServiceImpl implements ProductService {
 
         // // set category before mapping, otherwise it throw an error
         product.setCategory(category);
-
-        modelMapper.map(productDto, product);
         product.setImages(updatedProductImages);
+        product.setProductMeasurements(updatedProductMeasurements);
+        product.setCategory(category);
+        product.setTitle(productDto.getTitle());
+        product.setDescription(productDto.getDescription());
+        product.setPrice(productDto.getPrice());
+
+//        modelMapper.map(productDto, product); // NOOO usar para DTO to ENTITY cuando son Complejas, tiene otros Objects dentro (Table Associations)
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(savedProduct, ProductResponseDto.class);
