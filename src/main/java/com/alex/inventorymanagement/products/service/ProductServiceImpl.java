@@ -45,8 +45,7 @@ public class ProductServiceImpl implements ProductService {
     // genera la "sesión de persistencia" y administra las relaciones para W asi (sin productID hasta el final)
     // Hibernate hace Updates al final para garantizar las relaciones <- @Transactional
     public CreateProductResponseDto create(ProductRequestDto productDto) {
-        Category category = categoryRepository.findById(productDto.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID", productDto.getCategoryId()));
+        Category category = getCategoryById(productDto.getCategoryId());
 
         // // Si NO depende de otros calculos, PERSISTIR antes q nada para tener el ID y q Hibernate NOO haga 1 UPDATE x c/relacion en la @Transactional
         // NO hace falta la reasigacion para q product adquiera el ID, tras el .save() las demas entities pueden acceder al id
@@ -102,9 +101,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public ProductResponseDto findOne(Long id) {
-        Product product = productRepository.fetchOneById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Product", "ID", id)
-        );
+        Product product = getProductById(id);
 
         return modelMapper.map(product, ProductResponseDto.class);
     }
@@ -196,6 +193,19 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(savedProduct, ProductResponseDto.class);
     }
 
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        int updatedRows = productRepository.markAsDeleted(id);
+        if (updatedRows == 0) throw new ResourceNotFoundException("Product", "ID", id);
+
+        // mark all records associated with this productId
+        productMeasurementRepository.markAsDeletedByProductId(id);
+        stockRepository.markAsDeletedByProductId(id);
+
+    }
+
+
     private Product getProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
@@ -278,19 +288,6 @@ public class ProductServiceImpl implements ProductService {
         product.setTitle(productDto.getTitle());
         product.setDescription(productDto.getDescription());
         product.setPrice(productDto.getPrice());
-    }
-
-
-    @Override
-    @Transactional
-    public void delete(Long id) {
-        int updatedRows = productRepository.markAsDeleted(id);
-        if (updatedRows == 0) throw new ResourceNotFoundException("Product", "ID", id);
-
-        // mark all records associated with this productId
-        productMeasurementRepository.markAsDeletedByProductId(id);
-        stockRepository.markAsDeletedByProductId(id);
-
     }
 
 }
