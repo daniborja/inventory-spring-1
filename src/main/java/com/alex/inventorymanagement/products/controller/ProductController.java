@@ -4,6 +4,7 @@ import com.alex.inventorymanagement.common.constants.PaginationConstants;
 import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
 import com.alex.inventorymanagement.products.dto.PaginatedProductsResponseDto;
 import com.alex.inventorymanagement.products.dto.ProductRequestDto;
+import com.alex.inventorymanagement.products.dto.ProductResponseDto;
 import com.alex.inventorymanagement.products.repository.ProductRepository;
 import com.alex.inventorymanagement.products.service.ProductService;
 import jakarta.validation.Valid;
@@ -47,7 +48,13 @@ public class ProductController {
 
     @GetMapping("/procedure")
     public ResponseEntity<?> findAllProcedure() {
+        // just for test this StoredProcedure (it should be in service)
         return ResponseEntity.ok(productRepository.getProductsWithDetails());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> findOne(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findOne(id));
     }
 
 }

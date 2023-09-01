@@ -6,6 +6,7 @@ import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
 import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
 import com.alex.inventorymanagement.products.dto.PaginatedProductsResponseDto;
 import com.alex.inventorymanagement.products.dto.ProductRequestDto;
+import com.alex.inventorymanagement.products.dto.ProductResponseDto;
 import com.alex.inventorymanagement.products.entity.Product;
 import com.alex.inventorymanagement.products.entity.ProductImage;
 import com.alex.inventorymanagement.products.entity.ProductMeasurement;
@@ -99,5 +100,13 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
+    public ProductResponseDto findOne(Long id) {
+        Product product = productRepository.fetchOneById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Product", "ID", id)
+        );
+
+        return modelMapper.map(product, ProductResponseDto.class);
+    }
 
 }

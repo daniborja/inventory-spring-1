@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -17,6 +18,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "LEFT JOIN FETCH ProductImage pim ON pim.product.id = p.id WHERE p.deleted = false "
     )
     Page<Product> fetchAll(Pageable pageable);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH Category c ON c.id = p.category.id " +
+            "LEFT JOIN FETCH ProductMeasurement pm ON pm.product.id = p.id LEFT JOIN FETCH Stock s ON s.product.id = p.id " +
+            "LEFT JOIN FETCH ProductImage pim ON pim.product.id = p.id WHERE p.deleted = false AND p.id = :id "
+    )
+    Optional<Product> fetchOneById(Long id);
 
 
     // // // Store Procedure (PostgreSQL Function): 'cause of the Mapping DTO create another calls to DB
