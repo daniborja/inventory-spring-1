@@ -8,5 +8,5 @@ public class ProductMeasurementDto {
     private Long id;
     private String measurementType;
     private String measurementValue;
-    private Boolean deleted;
+//    private Boolean deleted;
 }

@@ -7,5 +7,5 @@ import lombok.Data;
 public class StockDto {
     private Long id;
     private Long quantity;
-    private Boolean deleted;
+//    private Boolean deleted;
 }

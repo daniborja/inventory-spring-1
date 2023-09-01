@@ -1,10 +1,7 @@
 package com.alex.inventorymanagement.products.controller;
 
 import com.alex.inventorymanagement.common.constants.PaginationConstants;
-import com.alex.inventorymanagement.products.dto.CreateProductResponseDto;
-import com.alex.inventorymanagement.products.dto.PaginatedProductsResponseDto;
-import com.alex.inventorymanagement.products.dto.ProductRequestDto;
-import com.alex.inventorymanagement.products.dto.ProductResponseDto;
+import com.alex.inventorymanagement.products.dto.*;
 import com.alex.inventorymanagement.products.repository.ProductRepository;
 import com.alex.inventorymanagement.products.service.ProductService;
 import jakarta.validation.Valid;
@@ -57,6 +54,10 @@ public class ProductController {
         return ResponseEntity.ok(productService.findOne(id));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody ProductUPDRequestDto productUPDRequestDto) {
+        return ResponseEntity.ok(productService.update(id, productUPDRequestDto));
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

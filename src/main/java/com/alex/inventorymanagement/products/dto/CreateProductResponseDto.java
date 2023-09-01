@@ -1,5 +1,6 @@
 package com.alex.inventorymanagement.products.dto;
 
+import com.alex.inventorymanagement.categories.CategoryResponseDto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ public class CreateProductResponseDto {
     private String sku;
     private String description;
     private double price;
+    private CategoryResponseDto category;
     private LocalDateTime createdAt;
     private List<ImageDTO> images;
 

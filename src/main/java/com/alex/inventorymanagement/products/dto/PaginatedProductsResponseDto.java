@@ -30,7 +30,6 @@ public class PaginatedProductsResponseDto {
         private Double price;
         private String createdAt;
         private String updatedAt;
-        private Boolean deleted;
         private List<ProductMeasurementDto> productMeasurements;
         private List<StockDto> stocks;
         private List<ProductImageDto> images;
@@ -41,14 +40,12 @@ public class PaginatedProductsResponseDto {
         private Long id;
         private String measurementType;
         private String measurementValue;
-        private Boolean deleted;
     }
 
     @Data
     public static class StockDto {
         private Long id;
         private Long quantity;
-        private Boolean deleted;
     }
 
     @Data

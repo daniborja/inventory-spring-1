@@ -1,5 +1,6 @@
 package com.alex.inventorymanagement.products.dto;
 
+import com.alex.inventorymanagement.categories.CategoryResponseDto;
 import com.alex.inventorymanagement.stocks.dto.StockDto;
 import lombok.Data;
 
@@ -15,7 +16,8 @@ public class ProductResponseDto {
     private Double price;
     private String createdAt;
     private String updatedAt;
-    private Boolean deleted;
+    //    private Boolean deleted;
+    private CategoryResponseDto category;
     private List<ProductMeasurementDto> productMeasurements;
     private List<StockDto> stocks;
     private List<ProductImageDto> images;
