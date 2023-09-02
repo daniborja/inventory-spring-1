@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface StockRepository extends CrudRepository<Stock, Long> {
@@ -15,5 +16,7 @@ public interface StockRepository extends CrudRepository<Stock, Long> {
     void markAsDeletedByProductId(Long productId);
 
     List<Stock> findAllByProductIdOrderByIdAsc(Long productId);
+
+    Optional<Stock> findByProductMeasurementId(Long productMeasurementId);
 
 }
