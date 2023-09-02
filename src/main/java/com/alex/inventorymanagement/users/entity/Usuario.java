@@ -42,7 +42,6 @@ public class Usuario {
     private Set<Role> roles;
 
 
-    // // for more control we can use those methods, but for simplicity `@EntityListeners(AuditingEntityListener.class)`
     @PrePersist
     private void prePersist() {
         createdAt = LocalDateTime.now();

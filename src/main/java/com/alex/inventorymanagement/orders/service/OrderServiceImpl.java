@@ -8,6 +8,7 @@ import com.alex.inventorymanagement.common.exceptions.UnauthorizedException;
 import com.alex.inventorymanagement.orders.dto.CreateOrderRequestDto;
 import com.alex.inventorymanagement.orders.entity.Order;
 import com.alex.inventorymanagement.orders.entity.OrderItem;
+import com.alex.inventorymanagement.orders.entity.OrderResponseDto;
 import com.alex.inventorymanagement.orders.repository.OrderItemRepository;
 import com.alex.inventorymanagement.orders.repository.OrderRepository;
 import com.alex.inventorymanagement.products.entity.Product;
@@ -98,6 +99,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findAll() {
         return orderRepository.findAll();
+    }
+
+    @Override
+    public OrderResponseDto findOne(Long id) {
+        Order order = orderRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Order", "ID", id)
+        );
+
+        return modelMapper.map(order, OrderResponseDto.class);
     }
 
 
