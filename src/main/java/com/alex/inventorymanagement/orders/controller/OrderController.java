@@ -31,7 +31,13 @@ public class OrderController {
     @GetMapping
     @Secured(RoleConstants.ADMIN)
     public ResponseEntity<?> findAll() {
-        return  ResponseEntity.ok(orderService.findAll());
+        return ResponseEntity.ok(orderService.findAll());
+    }
+
+    @GetMapping("/{id}")
+    @Secured(RoleConstants.ADMIN)
+    public ResponseEntity<?> findOne(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.findOne(id));
     }
 
 }
