@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -62,6 +63,10 @@ public class OrderServiceImpl implements OrderService {
                 .orderItems(new ArrayList<>())
                 .build();
 
+        // calc total amount
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal subtotal = BigDecimal.ZERO;
+
 
         List<OrderItem> orderItems = new ArrayList<>();
         for (CreateOrderRequestDto.OrderItemDto orderItemDto : orderRequestDto.getItems()) {
@@ -85,6 +90,14 @@ public class OrderServiceImpl implements OrderService {
                     .priceAtPurchase(product.getPrice())
                     .build();
 
+            // calc total amount
+            BigDecimal price = orderItemDto.getPrice();
+            Long quantity = orderItemDto.getQuantity();
+
+            BigDecimal itemSubtotal = price.multiply(BigDecimal.valueOf(quantity));
+            subtotal = subtotal.add(itemSubtotal);
+
+
             // update quantity
             Long updatedQuantity = stock.getQuantity() - orderItemDto.getQuantity();
             stock.setQuantity(updatedQuantity);
@@ -95,6 +108,14 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(orderItem);
         }
 
+        // cal total amount
+        BigDecimal taxPercentage = BigDecimal.valueOf(0.15); // for simplicity's sake, but it could come in the payload or fetched from other API
+        BigDecimal tax = subtotal.multiply(taxPercentage);
+        totalAmount = subtotal.add(tax);
+
+        order.setTotalAmount(totalAmount);
+        order.setSubtotal(subtotal);
+        order.setTax(taxPercentage);
         orderRepository.save(order);
         orderItemRepository.saveAll(orderItems);
 
@@ -136,6 +157,7 @@ public class OrderServiceImpl implements OrderService {
 
 
         // // fetch transaction by transactionId and check if it has been already paid
+        // client/front should have generated the transaction
         // response.STATUS == 'COMPLETE'  <-- ok    and   anothers validations
 
 
