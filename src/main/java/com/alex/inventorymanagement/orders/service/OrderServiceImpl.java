@@ -7,6 +7,7 @@ import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
 import com.alex.inventorymanagement.common.exceptions.UnauthorizedException;
 import com.alex.inventorymanagement.orders.dto.CreateOrderRequestDto;
 import com.alex.inventorymanagement.orders.dto.PaginatedOrdersResponseDto;
+import com.alex.inventorymanagement.orders.dto.PayOrderRequestDto;
 import com.alex.inventorymanagement.orders.entity.Order;
 import com.alex.inventorymanagement.orders.entity.OrderItem;
 import com.alex.inventorymanagement.orders.entity.OrderResponseDto;
@@ -125,6 +126,24 @@ public class OrderServiceImpl implements OrderService {
         );
 
         return modelMapper.map(order, OrderResponseDto.class);
+    }
+
+    @Override
+    public void payOrder(PayOrderRequestDto payOrderRequestDto) {
+        Order order = orderRepository.findById(payOrderRequestDto.getOrderId()).orElseThrow(
+                () -> new ResourceNotFoundException("Order", "ID", payOrderRequestDto.getOrderId())
+        );
+
+
+        // // fetch transaction by transactionId and check if it has been already paid
+        // response.STATUS == 'COMPLETE'  <-- ok    and   anothers validations
+
+
+        // // update order in DB
+        order.setPaid(true);
+        order.setTransactionId(payOrderRequestDto.getTransactionId());
+
+        orderRepository.save(order);
     }
 
 

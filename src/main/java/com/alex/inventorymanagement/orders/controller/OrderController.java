@@ -3,6 +3,7 @@ package com.alex.inventorymanagement.orders.controller;
 import com.alex.inventorymanagement.common.constants.PaginationConstants;
 import com.alex.inventorymanagement.common.constants.RoleConstants;
 import com.alex.inventorymanagement.orders.dto.CreateOrderRequestDto;
+import com.alex.inventorymanagement.orders.dto.PayOrderRequestDto;
 import com.alex.inventorymanagement.orders.entity.OrderResponseDto;
 import com.alex.inventorymanagement.orders.service.OrderService;
 import jakarta.validation.Valid;
@@ -52,6 +53,13 @@ public class OrderController {
     @Secured(RoleConstants.ADMIN)
     public ResponseEntity<OrderResponseDto> findOne(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.findOne(id));
+    }
+
+    @PostMapping("/pay")
+    public ResponseEntity<?> payOrder(@Valid @RequestBody PayOrderRequestDto payOrderRequestDto) {
+        orderService.payOrder(payOrderRequestDto);
+
+        return ResponseEntity.ok(null);
     }
 
 }
