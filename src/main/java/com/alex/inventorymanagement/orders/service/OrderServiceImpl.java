@@ -63,6 +63,7 @@ public class OrderServiceImpl implements OrderService {
             ProductMeasurement productMeasurement = findProductMeasurementById(orderItemDto.getProductMeasurementId());
             Stock stock = findStockByProductMeasurementId(orderItemDto.getProductMeasurementId());
 
+            // // validations:  TODO: ver q correspondan los productos al measurement y demas como en el UPD de product
             if (!Objects.equals(orderItemDto.getPrice(), product.getPrice())) {
                 throw new UnauthorizedException("Prices do not match!");  // at time of purchase
             }
@@ -93,6 +94,12 @@ public class OrderServiceImpl implements OrderService {
 
         return order;
     }
+
+    @Override
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
 
     private Product findProductById(Long productId) {
         return productRepository.findById(productId).orElseThrow(
