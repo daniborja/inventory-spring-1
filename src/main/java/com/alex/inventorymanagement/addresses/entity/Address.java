@@ -34,7 +34,7 @@ public class Address {
 
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private Usuario user;
 

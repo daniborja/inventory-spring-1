@@ -1,11 +1,11 @@
 package com.alex.inventorymanagement.addresses.service;
 
 import com.alex.inventorymanagement.addresses.dto.AddressRequestDto;
-import com.alex.inventorymanagement.addresses.entity.Address;
+import com.alex.inventorymanagement.addresses.dto.AddressResponseDto;
 
 
 public interface AddressService {
 
-    Address create(AddressRequestDto addressDto);
+    AddressResponseDto create(AddressRequestDto addressDto, String authUserEmail);
 
 }

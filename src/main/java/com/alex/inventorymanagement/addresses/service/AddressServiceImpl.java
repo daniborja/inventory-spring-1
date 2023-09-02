@@ -1,11 +1,15 @@
 package com.alex.inventorymanagement.addresses.service;
 
 import com.alex.inventorymanagement.addresses.dto.AddressRequestDto;
+import com.alex.inventorymanagement.addresses.dto.AddressResponseDto;
 import com.alex.inventorymanagement.addresses.entity.Address;
 import com.alex.inventorymanagement.addresses.repository.AddressRepository;
+import com.alex.inventorymanagement.users.entity.Usuario;
+import com.alex.inventorymanagement.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -13,14 +17,18 @@ import org.springframework.stereotype.Service;
 public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
+    private final UserService userService;
     private final ModelMapper modelMapper;
 
 
     @Override
-    public Address create(AddressRequestDto addressDto) {
+    @Transactional
+    public AddressResponseDto create(AddressRequestDto addressDto, String authUserEmail) {
         Address address = modelMapper.map(addressDto, Address.class);
+        Usuario user = userService.findOneByEmail(authUserEmail);
+        address.setUser(user);
 
-        return addressRepository.save(address);
+        return modelMapper.map(addressRepository.save(address), AddressResponseDto.class);
     }
 
 }
