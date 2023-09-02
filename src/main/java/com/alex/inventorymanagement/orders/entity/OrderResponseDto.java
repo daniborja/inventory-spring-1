@@ -27,7 +27,7 @@ public class OrderResponseDto {
         private Long id;
         private int quantity;
         private Double priceAtPurchase;
-//        private String productTitle;
+        private String productTitle;
     }
 
     @Data

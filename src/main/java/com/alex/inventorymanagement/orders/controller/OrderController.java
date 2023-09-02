@@ -2,6 +2,7 @@ package com.alex.inventorymanagement.orders.controller;
 
 import com.alex.inventorymanagement.common.constants.RoleConstants;
 import com.alex.inventorymanagement.orders.dto.CreateOrderRequestDto;
+import com.alex.inventorymanagement.orders.entity.OrderResponseDto;
 import com.alex.inventorymanagement.orders.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     @Secured(RoleConstants.ADMIN)
-    public ResponseEntity<?> findOne(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDto> findOne(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.findOne(id));
     }
 

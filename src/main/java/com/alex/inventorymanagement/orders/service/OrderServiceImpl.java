@@ -103,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto findOne(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
+        Order order = orderRepository.fetchOneById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Order", "ID", id)
         );
 
