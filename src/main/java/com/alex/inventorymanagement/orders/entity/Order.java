@@ -22,6 +22,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // calculated in back
     @Column(nullable = false)
     private BigDecimal tax;
     @Column(nullable = false)
@@ -29,6 +30,7 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
+    // provided by payment platform in back
     private String transactionId;  // set by payment platform after pay
     private boolean isPaid;        // validate with payment platform
 
