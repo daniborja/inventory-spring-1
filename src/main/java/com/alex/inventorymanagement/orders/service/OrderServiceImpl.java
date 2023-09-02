@@ -6,11 +6,13 @@ import com.alex.inventorymanagement.common.exceptions.BadRequestException;
 import com.alex.inventorymanagement.common.exceptions.ResourceNotFoundException;
 import com.alex.inventorymanagement.common.exceptions.UnauthorizedException;
 import com.alex.inventorymanagement.orders.dto.CreateOrderRequestDto;
+import com.alex.inventorymanagement.orders.dto.PaginatedOrdersResponseDto;
 import com.alex.inventorymanagement.orders.entity.Order;
 import com.alex.inventorymanagement.orders.entity.OrderItem;
 import com.alex.inventorymanagement.orders.entity.OrderResponseDto;
 import com.alex.inventorymanagement.orders.repository.OrderItemRepository;
 import com.alex.inventorymanagement.orders.repository.OrderRepository;
+import com.alex.inventorymanagement.products.dto.ProductResponseDto;
 import com.alex.inventorymanagement.products.entity.Product;
 import com.alex.inventorymanagement.products.entity.ProductMeasurement;
 import com.alex.inventorymanagement.products.repository.ProductMeasurementRepository;
@@ -21,6 +23,8 @@ import com.alex.inventorymanagement.users.entity.Usuario;
 import com.alex.inventorymanagement.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,8 +101,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findAll() {
-        return orderRepository.findAll();
+    public PaginatedOrdersResponseDto findAll(Pageable pageable) {
+        Page<Order> ordersPage = orderRepository.fetchAll(pageable);
+        List<Order> orders = ordersPage.getContent();
+        List<OrderResponseDto> orderResponseDtoList = orders.stream()
+                .map(order -> modelMapper.map(order, OrderResponseDto.class))
+                .toList();
+
+        return PaginatedOrdersResponseDto.builder()
+                .orders(orderResponseDtoList)
+                .pageNumber(ordersPage.getNumber())
+                .size(ordersPage.getSize())
+                .totalElements(ordersPage.getTotalElements())
+                .totalPages(ordersPage.getTotalPages())
+                .isLastOne(ordersPage.isLast())
+                .build();
     }
 
     @Override
