@@ -1,6 +1,7 @@
 package com.alex.inventorymanagement.products.controller;
 
 import com.alex.inventorymanagement.common.constants.PaginationConstants;
+import com.alex.inventorymanagement.common.constants.RoleConstants;
 import com.alex.inventorymanagement.products.dto.*;
 import com.alex.inventorymanagement.products.repository.ProductRepository;
 import com.alex.inventorymanagement.products.service.ProductService;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -60,6 +62,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @Secured(RoleConstants.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.ok().build();

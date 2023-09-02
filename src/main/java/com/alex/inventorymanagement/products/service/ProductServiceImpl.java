@@ -101,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public PaginatedProductsResponseDto findAll(Pageable pageable) {
-        Page<Product> productPage = productRepository.fetchAll(pageable);  // @override do not required in Repository <- JpaRepository
+        Page<Product> productPage = productRepository.findAll(pageable);  // @override do not required in Repository <- JpaRepository
         List<Product> products = productPage.getContent();
         List<PaginatedProductsResponseDto.ProductDto> productDtoList = products
                 .stream()

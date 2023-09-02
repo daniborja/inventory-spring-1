@@ -41,11 +41,18 @@ docker compose -f docker-compose.dev.yml up
 ```
 
 - Connect to a DB:
-
-    - `application.properties`
-        - Use Docker properties
+  - `application.properties`
+    - Use Docker properties
 
 ### With Docker
+
+#### Recommended option
+
+```bash
+docker compose up
+```
+
+#### Other way
 
 Build JAR
 
@@ -54,6 +61,8 @@ mvn clean package -DskipTests
 ```
 
 Run Docker Compose
+
+- First of all, set the corresponding configuration in the `Dockerfile`
 
 ```bash
 docker compose up
