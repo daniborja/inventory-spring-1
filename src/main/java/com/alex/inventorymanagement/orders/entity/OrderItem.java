@@ -5,13 +5,19 @@ import com.alex.inventorymanagement.products.entity.ProductMeasurement;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "order_item")
 public class OrderItem {
 
@@ -20,7 +26,7 @@ public class OrderItem {
     private Long id;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Long quantity;
 
     @Column(nullable = false)
     private BigDecimal priceAtPurchase;
