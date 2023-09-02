@@ -8,4 +8,5 @@ public interface AddressService {
 
     AddressResponseDto create(AddressRequestDto addressDto, String authUserEmail);
 
+    AddressResponseDto findOne(Long id);
 }
