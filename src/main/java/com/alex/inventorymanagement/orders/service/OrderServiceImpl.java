@@ -81,6 +81,8 @@ public class OrderServiceImpl implements OrderService {
             // update quantity
             Long updatedQuantity = stock.getQuantity() - orderItemDto.getQuantity();
             stock.setQuantity(updatedQuantity);
+            stockRepository.save(stock);
+
 
             order.getOrderItems().add(orderItem);
             orderItems.add(orderItem);

@@ -27,7 +27,7 @@ public class CreateOrderRequestDto {
         private BigDecimal price;
 
         @NotNull
-        private Integer quantity;
+        private Long quantity;
 
         @NotNull
         private Long productId;
@@ -37,8 +37,3 @@ public class CreateOrderRequestDto {
     }
 
 }
-
-
-
-
-
