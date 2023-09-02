@@ -12,6 +12,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,17 @@ public class AddressServiceImpl implements AddressService {
         );
 
         return modelMapper.map(address, AddressResponseDto.class);
+    }
+
+    @Override
+    public List<AddressResponseDto> findAllByAuthUser(String authUserEmail) {
+        Usuario user = userService.findOneByEmail(authUserEmail);
+
+        List<Address> addressesDb = addressRepository.findAllByUserId(user.getId());
+
+        return addressesDb.stream()
+                .map(address -> modelMapper.map(address, AddressResponseDto.class))
+                .toList();
     }
 
 }
